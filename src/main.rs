@@ -11,7 +11,7 @@ fn max(series: &[f64]) -> Option<f64> {
 
 fn min(series: &[f64]) -> Option<f64> {
     if !series.is_empty() {
-        return Some(series.iter().fold(f64::MIN, |pre, suc| pre.min(*suc)));
+        return Some(series.iter().fold(f64::MAX, |pre, suc| pre.min(*suc)));
     }
     None
 }
@@ -23,7 +23,11 @@ fn price_diff(series: &[f64]) -> Option<(f64, f64)> {
 
     let (last_price, first_price) = (series.last().unwrap(), series.first().unwrap());
     let price_diff_absolute = last_price - first_price;
-    let first = if *first_price == 0.0 { 1.0 } else { *first_price };
+    let first = if *first_price == 0.0 {
+        1.0
+    } else {
+        *first_price
+    };
     let price_diff_r = price_diff_absolute / first;
 
     Some((price_diff_absolute, price_diff_r))
@@ -66,4 +70,32 @@ fn main() {
     let test = [1.5, 2.0, 3.0, 30.123, 123.0, 123.1];
 
     println!("{:?}", price_diff(&test));
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_max() {
+        let test_values = [1.5, 2.0, 3.0, 30.123, 123.0, 123.1];
+        assert_eq!(max(&test_values), Some(123.1));
+    }
+
+    #[test]
+    fn test_max_with_empty_input() {
+        assert_eq!(max(&vec![]), None);
+    }
+
+    #[test]
+    fn test_min() {
+        let test_values = [1.5, 2.0, 3.0, 30.123, 123.0, 123.1];
+        assert_eq!(min(&test_values), Some(1.5));
+    }
+
+    #[test]
+    fn test_min_without_input() {
+        assert_eq!(min(&vec![]), None);
+    }
 }
