@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 use std::io::{Error, ErrorKind};
+use clap::{Arg, App};
 use yahoo_finance_api as yahoo;
 
 fn max(series: &[f64]) -> Option<f64> {
@@ -67,9 +68,41 @@ fn fetch_closing_data(
 }
 
 fn main() {
-    let test = [1.5, 2.0, 3.0, 30.123, 123.0, 123.1];
+    let matches = App::new("My Test Program")
+    .version("0.1.0")
+    .author("Hackerman Jones <hckrmnjones@hack.gov>")
+    .about("Teaches argument parsing")
+    .arg(Arg::with_name("from")
+             .short("f")
+             .long("from")
+             .takes_value(true)
+             .help("start Date"))
+    .arg(Arg::with_name("Symbol")
+             .short("s")
+             .long("symbols")
+             .takes_value(true)
+             .help("Five less than your favorite number"))
+    .get_matches();
 
-    println!("{:?}", price_diff(&test));
+   let current_date = Utc::now();
+   let  from = matches.value_of("from");
+   let  symbol = matches.value_of("Symbol");
+
+   if from.is_some() && symbol.is_some()  {
+    let datetime = Utc.from_utc_datetime(&DateTime::parse_from_rfc3339(from.unwrap()).unwrap().naive_utc());
+    let t =  String::from(symbol.unwrap());
+    let split =t.split(",");
+    println!("Symbol; max; min; price");
+    for s in split {
+        let closes = fetch_closing_data(&s, &datetime, &current_date);
+        if closes.is_ok() {
+            let value = closes.unwrap();
+           println!("{};{};{};{}", s, max(&value).unwrap(), min(&value).unwrap(), *value.last().unwrap());
+        } 
+    }
+
+}
+
 }
 
 #[cfg(test)]
